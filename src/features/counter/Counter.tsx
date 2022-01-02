@@ -12,10 +12,29 @@ import {
 import styles from "./Counter.module.css";
 
 interface BluetoothChannel {
-  postMessage: (message: string) => void;
+  postMessage: (message: any) => void;
+  scanDevice: (deviceName: string, deviceId: string) => void;
 }
 
-const BLE: BluetoothChannel = (window as any)["BLE"];
+interface NFCChannel {
+  postMessage: (message: any) => void;
+  discoverd: (tag: string) => void;
+}
+
+const BLE: BluetoothChannel = (window as any)["SmartLED_BLE"];
+const NFC: NFCChannel = (window as any)["SmartLED_NFC"];
+
+if (BLE) {
+  BLE.scanDevice = (deviceName, deviceId) => {
+    console.log(`BLE.scanDevice : ${deviceName}, ${deviceId}`);
+  };
+}
+
+if (BLE) {
+  NFC.discoverd = (tag) => {
+    console.log(`NFC.discoverd : ${tag}`);
+  };
+}
 
 export function Counter() {
   const count = useAppSelector(selectCount);
@@ -24,11 +43,19 @@ export function Counter() {
 
   const incrementValue = Number(incrementAmount) || 0;
 
-  React.useEffect(() => {
+  const ScanBLE = () => {
+    console.log("ScanBLE");
     if (BLE) {
-      BLE.postMessage(`count: ${count}`);
+      BLE.postMessage({ action: "scan", count });
     }
-  }, [count]);
+  };
+
+  const ScanNFC = () => {
+    console.log("ScanNFC");
+    if (NFC) {
+      NFC.postMessage({ action: "scan", count });
+    }
+  };
 
   return (
     <div>
@@ -47,6 +74,22 @@ export function Counter() {
           onClick={() => dispatch(increment())}
         >
           +
+        </button>
+      </div>
+      <div className={styles.row}>
+        <button
+          className={styles.button}
+          aria-label="Decrement value"
+          onClick={ScanBLE}
+        >
+          Scan BLE
+        </button>
+        <button
+          className={styles.button}
+          aria-label="Decrement value"
+          onClick={ScanNFC}
+        >
+          Scan NFC
         </button>
       </div>
       <div className={styles.row}>
