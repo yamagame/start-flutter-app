@@ -44,19 +44,17 @@ export function Counter() {
   const incrementValue = Number(incrementAmount) || 0;
 
   const ScanBLE = () => {
-    console.log("ScanBLE");
+    const msg = JSON.stringify({ action: "scan", count });
+    console.log("ScanBLE", msg);
     if (BLE) {
-      const msg = JSON.stringify({ action: "scan", count });
-      console.log(msg);
       BLE.postMessage(msg);
     }
   };
 
   const ScanNFC = () => {
-    console.log("ScanNFC");
+    const msg = JSON.stringify({ action: "scan", count });
+    console.log("ScanNFC", msg);
     if (NFC) {
-      const msg = JSON.stringify({ action: "scan", count });
-      console.log(msg);
       NFC.postMessage(msg);
     }
   };
