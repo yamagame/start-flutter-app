@@ -50,10 +50,10 @@ export function Counter() {
 
   React.useEffect(() => {
     const BLEScan = (message: any) => {
-      console.log(`ble`, message);
+      console.log(`ble`, JSON.stringify(message));
     };
     const NFCScan = (message: any) => {
-      console.log(`nfc`, message);
+      console.log(`nfc`, JSON.stringify(message));
     };
     applicationEvent.on("ble", BLEScan);
     applicationEvent.on("nfc", NFCScan);
@@ -90,6 +90,7 @@ export function Counter() {
   return (
     <div>
       <div className={styles.row}>
+        V1
         <button
           className={styles.button}
           aria-label="Decrement value"
