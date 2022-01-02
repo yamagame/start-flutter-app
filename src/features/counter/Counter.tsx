@@ -13,26 +13,30 @@ import styles from "./Counter.module.css";
 
 interface BluetoothChannel {
   postMessage: (message: any) => void;
-  scanDevice: (deviceName: string, deviceId: string) => void;
+  receiveMessage: (message: string) => void;
 }
 
 interface NFCChannel {
   postMessage: (message: any) => void;
-  discoverd: (tag: string) => void;
+  receiveMessage: (message: string) => void;
 }
 
 const BLE: BluetoothChannel = (window as any)["SmartLED_BLE"];
 const NFC: NFCChannel = (window as any)["SmartLED_NFC"];
 
 if (BLE) {
-  BLE.scanDevice = (deviceName, deviceId) => {
-    console.log(`BLE.scanDevice : ${deviceName}, ${deviceId}`);
+  BLE.receiveMessage = (message) => {
+    const msg = JSON.parse(message);
+    const event = new Event(msg.action, msg.payload);
+    document.dispatchEvent(event);
   };
 }
 
 if (BLE) {
-  NFC.discoverd = (tag) => {
-    console.log(`NFC.discoverd : ${tag}`);
+  NFC.receiveMessage = (message) => {
+    const msg = JSON.parse(message);
+    const event = new Event(msg.action, msg.payload);
+    document.dispatchEvent(event);
   };
 }
 
@@ -43,16 +47,39 @@ export function Counter() {
 
   const incrementValue = Number(incrementAmount) || 0;
 
-  const ScanBLE = () => {
-    const msg = JSON.stringify({ action: "scan", count });
+  React.useEffect(() => {
+    const BLEScan = (message: any) => {
+      console.log(`ble`, message);
+    };
+    const NFCScan = (message: any) => {
+      console.log(`nfc`, message);
+    };
+    document.addEventListener("ble", BLEScan);
+    document.addEventListener("nfc", NFCScan);
+    return () => {
+      document.removeEventListener("ble", BLEScan);
+      document.removeEventListener("nfc", NFCScan);
+    };
+  }, []);
+
+  const StartBLE = () => {
+    const msg = JSON.stringify({ action: "start" });
     console.log("ScanBLE", msg);
     if (BLE) {
       BLE.postMessage(msg);
     }
   };
 
+  const StopBLE = () => {
+    const msg = JSON.stringify({ action: "stop" });
+    console.log("StopBLE", msg);
+    if (BLE) {
+      BLE.postMessage(msg);
+    }
+  };
+
   const ScanNFC = () => {
-    const msg = JSON.stringify({ action: "scan", count });
+    const msg = JSON.stringify({ action: "start" });
     console.log("ScanNFC", msg);
     if (NFC) {
       NFC.postMessage(msg);
@@ -65,26 +92,16 @@ export function Counter() {
         <button
           className={styles.button}
           aria-label="Decrement value"
-          onClick={() => dispatch(decrement())}
+          onClick={StartBLE}
         >
-          -
+          Start BLE
         </button>
-        <span className={styles.value}>{count}</span>
-        <button
-          className={styles.button}
-          aria-label="Increment value"
-          onClick={() => dispatch(increment())}
-        >
-          +
-        </button>
-      </div>
-      <div className={styles.row}>
         <button
           className={styles.button}
           aria-label="Decrement value"
-          onClick={ScanBLE}
+          onClick={StopBLE}
         >
-          Scan BLE
+          Stop BLE
         </button>
         <button
           className={styles.button}
