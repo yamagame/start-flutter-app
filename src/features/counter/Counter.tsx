@@ -55,9 +55,9 @@ export function Counter() {
       console.log(`ble`, JSON.stringify(message));
     };
     const NFCScan = (message: any) => {
-      console.log("test");
+      console.log("test2");
       console.log(`nfc`, JSON.stringify(message));
-      console.log(`nfc3`, message.payload.tag);
+      console.log(`nfc3`, message.payload);
     };
     applicationEvent.on("ble", BLEScan);
     applicationEvent.on("nfc", NFCScan);
@@ -93,7 +93,7 @@ export function Counter() {
 
   return (
     <div>
-      <div className={styles.row}>V5</div>
+      <div className={styles.row}>V6</div>
       <div className={styles.row}>
         <button
           className={styles.button}
