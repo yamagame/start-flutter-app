@@ -29,6 +29,7 @@ const NFC: NFCChannel = (window as any)["SmartLED_NFC"];
 
 if (BLE) {
   BLE.receiveMessage = (message) => {
+    console.log("ble2", message);
     const msg = JSON.parse(message);
     applicationEvent.emit("ble", msg);
   };
@@ -36,6 +37,7 @@ if (BLE) {
 
 if (BLE) {
   NFC.receiveMessage = (message) => {
+    console.log("nfc2", message);
     const msg = JSON.parse(message);
     applicationEvent.emit("nfc", msg);
   };
@@ -90,7 +92,7 @@ export function Counter() {
   return (
     <div>
       <div className={styles.row}>
-        V1
+        V2
         <button
           className={styles.button}
           aria-label="Decrement value"
