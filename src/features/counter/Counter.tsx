@@ -91,9 +91,22 @@ export function Counter() {
     }
   };
 
+  const Reload = () => {
+    window.location.reload();
+  };
+
   return (
     <div>
       <div className={styles.row}>V7</div>
+      <div className={styles.row}>
+        <button
+          className={styles.button}
+          aria-label="Decrement value"
+          onClick={Reload}
+        >
+          Reload
+        </button>
+      </div>
       <div className={styles.row}>
         <button
           className={styles.button}
