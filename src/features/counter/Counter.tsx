@@ -46,14 +46,18 @@ export function Counter() {
   const ScanBLE = () => {
     console.log("ScanBLE");
     if (BLE) {
-      BLE.postMessage(JSON.stringify({ action: "scan", count }));
+      const msg = JSON.stringify({ action: "scan", count });
+      console.log(msg);
+      BLE.postMessage(msg);
     }
   };
 
   const ScanNFC = () => {
     console.log("ScanNFC");
     if (NFC) {
-      NFC.postMessage(JSON.stringify({ action: "scan", count }));
+      const msg = JSON.stringify({ action: "scan", count });
+      console.log(msg);
+      NFC.postMessage(msg);
     }
   };
 
