@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import EventEmitter from "events";
 
 import { useAppSelector, useAppDispatch } from "../../app/hooks";
 import {
@@ -21,22 +22,22 @@ interface NFCChannel {
   receiveMessage: (message: string) => void;
 }
 
+const applicationEvent = new EventEmitter();
+
 const BLE: BluetoothChannel = (window as any)["SmartLED_BLE"];
 const NFC: NFCChannel = (window as any)["SmartLED_NFC"];
 
 if (BLE) {
   BLE.receiveMessage = (message) => {
     const msg = JSON.parse(message);
-    const event = new Event(msg.action, msg.payload);
-    document.dispatchEvent(event);
+    applicationEvent.emit("ble", msg);
   };
 }
 
 if (BLE) {
   NFC.receiveMessage = (message) => {
     const msg = JSON.parse(message);
-    const event = new Event(msg.action, msg.payload);
-    document.dispatchEvent(event);
+    applicationEvent.emit("nfc", msg);
   };
 }
 
@@ -54,11 +55,11 @@ export function Counter() {
     const NFCScan = (message: any) => {
       console.log(`nfc`, message);
     };
-    document.addEventListener("ble", BLEScan);
-    document.addEventListener("nfc", NFCScan);
+    applicationEvent.on("ble", BLEScan);
+    applicationEvent.on("nfc", NFCScan);
     return () => {
-      document.removeEventListener("ble", BLEScan);
-      document.removeEventListener("nfc", NFCScan);
+      applicationEvent.removeListener("ble", BLEScan);
+      applicationEvent.removeListener("nfc", NFCScan);
     };
   }, []);
 
