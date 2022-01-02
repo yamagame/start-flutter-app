@@ -56,7 +56,7 @@ export function Counter() {
     };
     const NFCScan = (message: any) => {
       console.log(`nfc`, JSON.stringify(message));
-      console.log(message.payload.tag);
+      console.log(`nfc3`, message.payload.tag);
     };
     applicationEvent.on("ble", BLEScan);
     applicationEvent.on("nfc", NFCScan);
@@ -93,7 +93,7 @@ export function Counter() {
   return (
     <div>
       <div className={styles.row}>
-        V3
+        V4
         <button
           className={styles.button}
           aria-label="Decrement value"
