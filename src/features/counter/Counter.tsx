@@ -99,9 +99,19 @@ export function Counter() {
     window.location.reload();
   };
 
+  const startLEDHander = (deviceId: string) => {
+    return () => {
+      BLE.postMessage({
+        action: "connect",
+        deviceId,
+        payload: JSON.stringify({ action: "on", duration: "10" }),
+      });
+    };
+  };
+
   return (
     <div>
-      <div className={styles.row}>V8</div>
+      <div className={styles.row}>V9</div>
       <div className={styles.row}>
         <button
           className={styles.button}
@@ -135,7 +145,7 @@ export function Counter() {
         </button>
       </div>
       {Object.entries(devices).map(([key, device]) => (
-        <p>
+        <p onClick={startLEDHander(key)}>
           {key} : {device.name}
         </p>
       ))}
