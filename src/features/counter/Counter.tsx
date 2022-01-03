@@ -12,36 +12,76 @@ import {
 } from "./counterSlice";
 import styles from "./Counter.module.css";
 
-interface BluetoothChannel {
-  postMessage: (message: any) => void;
+// interface BluetoothChannel {
+//   postMessage: (message: any) => void;
+//   receiveMessage: (message: string) => void;
+// }
+
+// interface NFCChannel {
+//   postMessage: (message: any) => void;
+//   receiveMessage: (message: string) => void;
+// }
+
+interface ApplicationCannnel {
+  postMessage: (message: string) => void;
   receiveMessage: (message: string) => void;
 }
 
-interface NFCChannel {
-  postMessage: (message: any) => void;
-  receiveMessage: (message: string) => void;
-}
-
-const applicationEvent = new EventEmitter();
-
-const BLE: BluetoothChannel = (window as any)["SmartLED_BLE"];
-const NFC: NFCChannel = (window as any)["SmartLED_NFC"];
-
-if (BLE) {
-  BLE.receiveMessage = (message) => {
-    console.log("ble2", message);
-    const msg = JSON.parse(message);
-    applicationEvent.emit("ble", msg);
+class ApplicationEmitter extends EventEmitter {
+  channel: ApplicationCannnel;
+  constructor(channel: ApplicationCannnel) {
+    super();
+    this.channel = channel;
+  }
+  postMessage = (message: any) => {
+    const msg = JSON.stringify(message);
+    console.log(msg);
+    if (this.channel) {
+      this.channel.postMessage(msg);
+    }
   };
 }
 
-if (BLE) {
-  NFC.receiveMessage = (message) => {
-    console.log("nfc2", message);
+const SmartLED_BLE: ApplicationCannnel = (window as any)["SmartLED_BLE"];
+const SmartLED_NFC: ApplicationCannnel = (window as any)["SmartLED_NFC"];
+
+export const BLE: ApplicationEmitter = new ApplicationEmitter(SmartLED_BLE);
+export const NFC: ApplicationEmitter = new ApplicationEmitter(SmartLED_NFC);
+
+if (SmartLED_BLE) {
+  SmartLED_BLE.receiveMessage = (message) => {
     const msg = JSON.parse(message);
-    applicationEvent.emit("nfc", msg);
+    BLE.emit("data", msg);
   };
 }
+
+if (SmartLED_NFC) {
+  SmartLED_NFC.receiveMessage = (message) => {
+    const msg = JSON.parse(message);
+    NFC.emit("data", msg);
+  };
+}
+
+// const applicationEvent = new EventEmitter();
+
+// const BLE: BluetoothChannel = (window as any)["SmartLED_BLE"];
+// const NFC: NFCChannel = (window as any)["SmartLED_NFC"];
+
+// if (BLE) {
+//   BLE.receiveMessage = (message) => {
+//     console.log("ble2", message);
+//     const msg = JSON.parse(message);
+//     applicationEvent.emit("ble", msg);
+//   };
+// }
+
+// if (BLE) {
+//   NFC.receiveMessage = (message) => {
+//     console.log("nfc2", message);
+//     const msg = JSON.parse(message);
+//     applicationEvent.emit("nfc", msg);
+//   };
+// }
 
 export function Counter() {
   const count = useAppSelector(selectCount);
@@ -55,40 +95,26 @@ export function Counter() {
       console.log(`ble`, JSON.stringify(message));
     };
     const NFCScan = (message: any) => {
-      console.log("test2");
       console.log(`nfc`, JSON.stringify(message));
-      console.log(`nfc3`, Object.keys(message.payload).join(","));
     };
-    applicationEvent.on("ble", BLEScan);
-    applicationEvent.on("nfc", NFCScan);
+    BLE.on("data", BLEScan);
+    NFC.on("data", NFCScan);
     return () => {
-      applicationEvent.removeListener("ble", BLEScan);
-      applicationEvent.removeListener("nfc", NFCScan);
+      BLE.removeListener("ble", BLEScan);
+      NFC.removeListener("nfc", NFCScan);
     };
   }, []);
 
   const StartBLE = () => {
-    const msg = JSON.stringify({ action: "start" });
-    console.log("ScanBLE", msg);
-    if (BLE) {
-      BLE.postMessage(msg);
-    }
+    BLE.postMessage({ action: "start" });
   };
 
   const StopBLE = () => {
-    const msg = JSON.stringify({ action: "stop" });
-    console.log("StopBLE", msg);
-    if (BLE) {
-      BLE.postMessage(msg);
-    }
+    BLE.postMessage({ action: "stop" });
   };
 
   const ScanNFC = () => {
-    const msg = JSON.stringify({ action: "start" });
-    console.log("ScanNFC", msg);
-    if (NFC) {
-      NFC.postMessage(msg);
-    }
+    NFC.postMessage({ action: "start" });
   };
 
   const Reload = () => {
