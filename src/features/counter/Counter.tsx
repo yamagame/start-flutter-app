@@ -12,16 +12,6 @@ import {
 } from "./counterSlice";
 import styles from "./Counter.module.css";
 
-// interface BluetoothChannel {
-//   postMessage: (message: any) => void;
-//   receiveMessage: (message: string) => void;
-// }
-
-// interface NFCChannel {
-//   postMessage: (message: any) => void;
-//   receiveMessage: (message: string) => void;
-// }
-
 interface ApplicationCannnel {
   postMessage: (message: string) => void;
   receiveMessage: (message: string) => void;
@@ -62,46 +52,34 @@ if (SmartLED_NFC) {
   };
 }
 
-// const applicationEvent = new EventEmitter();
-
-// const BLE: BluetoothChannel = (window as any)["SmartLED_BLE"];
-// const NFC: NFCChannel = (window as any)["SmartLED_NFC"];
-
-// if (BLE) {
-//   BLE.receiveMessage = (message) => {
-//     console.log("ble2", message);
-//     const msg = JSON.parse(message);
-//     applicationEvent.emit("ble", msg);
-//   };
-// }
-
-// if (BLE) {
-//   NFC.receiveMessage = (message) => {
-//     console.log("nfc2", message);
-//     const msg = JSON.parse(message);
-//     applicationEvent.emit("nfc", msg);
-//   };
-// }
+interface BLEDevice {
+  name: string;
+  id: string;
+}
 
 export function Counter() {
   const count = useAppSelector(selectCount);
   const dispatch = useAppDispatch();
   const [incrementAmount, setIncrementAmount] = useState("2");
+  const [devices, setDevices] = React.useState<{ [index: string]: BLEDevice }>(
+    {}
+  );
 
   const incrementValue = Number(incrementAmount) || 0;
 
   React.useEffect(() => {
-    const BLEScan = (message: any) => {
-      console.log(`ble`, JSON.stringify(message));
+    const recieveBleDevice = (data: any) => {
+      if (data && data.payload) {
+        const foundDevice = data.payload as BLEDevice;
+        const d = { ...devices };
+        d[foundDevice.id] = foundDevice;
+        setDevices(d);
+      }
     };
-    const NFCScan = (message: any) => {
-      console.log(`nfc`, JSON.stringify(message));
-    };
-    BLE.on("data", BLEScan);
-    NFC.on("data", NFCScan);
+    BLE.addListener("data", recieveBleDevice);
     return () => {
-      BLE.removeListener("ble", BLEScan);
-      NFC.removeListener("nfc", NFCScan);
+      BLE.postMessage({ action: "stop" });
+      BLE.removeListener("data", recieveBleDevice);
     };
   }, []);
 
@@ -123,7 +101,7 @@ export function Counter() {
 
   return (
     <div>
-      <div className={styles.row}>V7</div>
+      <div className={styles.row}>V8</div>
       <div className={styles.row}>
         <button
           className={styles.button}
@@ -156,32 +134,11 @@ export function Counter() {
           Scan NFC
         </button>
       </div>
-      <div className={styles.row}>
-        <input
-          className={styles.textbox}
-          aria-label="Set increment amount"
-          value={incrementAmount}
-          onChange={(e) => setIncrementAmount(e.target.value)}
-        />
-        <button
-          className={styles.button}
-          onClick={() => dispatch(incrementByAmount(incrementValue))}
-        >
-          Add Amount
-        </button>
-        <button
-          className={styles.asyncButton}
-          onClick={() => dispatch(incrementAsync(incrementValue))}
-        >
-          Add Async
-        </button>
-        <button
-          className={styles.button}
-          onClick={() => dispatch(incrementIfOdd(incrementValue))}
-        >
-          Add If Odd
-        </button>
-      </div>
+      {Object.entries(devices).map(([key, device]) => (
+        <p>
+          {key} : {device.name}
+        </p>
+      ))}
     </div>
   );
 }
