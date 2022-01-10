@@ -68,20 +68,27 @@ export function Counter() {
   const incrementValue = Number(incrementAmount) || 0;
 
   React.useEffect(() => {
+    return () => {
+      BLE.postMessage({ action: "stop" });
+    };
+  }, []);
+
+  React.useEffect(() => {
     const recieveBleDevice = (data: any) => {
       if (data && data.payload) {
         const foundDevice = data.payload as BLEDevice;
-        const d = { ...devices };
-        d[foundDevice.id] = foundDevice;
-        setDevices(d);
+        if (!devices[foundDevice.id]) {
+          const d = { ...devices };
+          d[foundDevice.id] = foundDevice;
+          setDevices(d);
+        }
       }
     };
     BLE.addListener("data", recieveBleDevice);
     return () => {
-      BLE.postMessage({ action: "stop" });
       BLE.removeListener("data", recieveBleDevice);
     };
-  }, []);
+  }, [devices]);
 
   const StartBLE = () => {
     BLE.postMessage({ action: "start" });
